@@ -22,23 +22,56 @@ void CHSM_Create(void);
 
 void CHSM_Start(void);
 
+void CHSM_Entry(CHSM_State *self) {
+        IF_SUPER {
+                CHSM_Entry(self->super);
+        }
+        if (self->Entry != 0) {
+                self->Entry();
+        }
+}
+
+void CHSM_Exit(CHSM_State *self) {
+        IF_SUPER {
+                CHSM_Exit(self->super);
+        }
+        if (self->Exit != 0) {
+                self->Exit();
+        }
+}
+
+void CHSM_MainLoop(CHSM_State *self) {
+        IF_SUPER {
+                CHSM_MainLoop(self->super);
+        }
+        if (self->MainLoop != 0) {
+                self->MainLoop();
+        }
+}
+
+void CHSM_State_Next(CHSM_State* next) {
+        CHSM_State_Run(next);
+}
+
 void CHSM_State_Run(CHSM_State *self) {
         self->IsActive = true;
-        RUN_LIFECYCLE_FUN(Entry)
+
+        CHSM_Entry(self);
 
         uint32_t tickStart = 0;
         uint32_t tickStop = TICK_RATE_TO_TICKS(self->TickRate);
         while(self->IsActive) {
                 tickStart = CHSM_GetTick();
-                RUN_LIFECYCLE_FUN(MainLoop)
+
+                CHSM_MainLoop(self);
 
                 if (self->TickRate!=0)
                         while (CHSM_GetTick() - tickStart < tickStop);
         }
 
-        RUN_LIFECYCLE_FUN(Exit)
+        CHSM_Exit(self);
 
-        CHSM_State_Run(self->Next);
+        CHSM_State_Next(self->Next);
 }
 
 void CHSM_State_Transfer(CHSM_State *self, CHSM_State *next) {

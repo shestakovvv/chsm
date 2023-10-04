@@ -15,6 +15,9 @@ uint8_t UartTxBuffer[100];
 void State_Init_MainLoop(void);
 void State_Active_MainLoop(void);
 void State_Active_OnExit(void);
+void State_Active2_MainLoop(void);
+void State_Active2_OnExit(void);
+
 
 CHSM_State State_Init = {
         .TickRate = 100,
@@ -29,6 +32,14 @@ CHSM_State State_Active = {
         .Entry = 0,
         .Exit = &State_Active_OnExit,
         .MainLoop = &State_Active_MainLoop
+};
+
+CHSM_State State_Active2 = {
+        .super = &State_Active,
+        .TickRate = 100,
+        .Entry = 0,
+        .Exit = &State_Active2_OnExit,
+        .MainLoop = &State_Active2_MainLoop
 };
 
 int main() {
@@ -49,9 +60,9 @@ void State_Init_MainLoop(void) {
         uint8_t res = HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin);
         if (res) {
                 if (State_Init.IsActive)
-                        CHSM_State_Transfer(&State_Init, &State_Active);
+                        CHSM_State_Transfer(&State_Init, &State_Active2);
                 else
-                        CHSM_State_Transfer(&State_Active, &State_Init);
+                        CHSM_State_Transfer(&State_Active2, &State_Init);
         }
 
         memcpy(UartTxBuffer, msg, MSG_SIZE);
@@ -67,6 +78,14 @@ void State_Active_MainLoop(void) {
 
 void State_Active_OnExit(void) {
         Platform_TxIndicator(PLATFORM_INDICATOR_OFF);
+}
+
+void State_Active2_MainLoop(void) {
+        Platform_RxIndicator(PLATFORM_INDICATOR_TOGGLE);
+}
+
+void State_Active2_OnExit(void) {
+        Platform_RxIndicator(PLATFORM_INDICATOR_OFF);
 }
 
 uint32_t CHSM_GetTick(void) {
