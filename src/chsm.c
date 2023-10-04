@@ -26,7 +26,7 @@ void CHSM_Entry(CHSM_State *self) {
         IF_SUPER {
                 CHSM_Entry(self->super);
         }
-        if (self->Entry != 0) {
+        if (self->Entry) {
                 self->Entry();
         }
 }
@@ -35,7 +35,7 @@ void CHSM_Exit(CHSM_State *self) {
         IF_SUPER {
                 CHSM_Exit(self->super);
         }
-        if (self->Exit != 0) {
+        if (self->Exit) {
                 self->Exit();
         }
 }
@@ -44,37 +44,39 @@ void CHSM_MainLoop(CHSM_State *self) {
         IF_SUPER {
                 CHSM_MainLoop(self->super);
         }
-        if (self->MainLoop != 0) {
+        if (self->MainLoop) {
                 self->MainLoop();
         }
 }
 
-void CHSM_State_Next(CHSM_State* next) {
-        CHSM_State_Run(next);
+void CHSM_State_Next(CHSM_Scheduler* scheduler) {
+        scheduler->Current = scheduler->Next;
+        scheduler->Next = 0;
+        CHSM_State_Run(scheduler);
 }
 
-void CHSM_State_Run(CHSM_State *self) {
-        self->IsActive = true;
+void CHSM_State_Run(CHSM_Scheduler* scheduler) {
+        if (!scheduler->Current)
+                CHSM_State_Next(scheduler);
 
-        CHSM_Entry(self);
+        CHSM_Entry(scheduler->Current);
 
         uint32_t tickStart = 0;
-        uint32_t tickStop = TICK_RATE_TO_TICKS(self->TickRate);
-        while(self->IsActive) {
+        uint32_t tickStop = TICK_RATE_TO_TICKS(scheduler->Current->TickRate);
+        while(scheduler->Next == 0) {
                 tickStart = CHSM_GetTick();
 
-                CHSM_MainLoop(self);
+                CHSM_MainLoop(scheduler->Current);
 
-                if (self->TickRate!=0)
+                if (scheduler->Current->TickRate!=0)
                         while (CHSM_GetTick() - tickStart < tickStop);
         }
 
-        CHSM_Exit(self);
+        CHSM_Exit(scheduler->Current);
 
-        CHSM_State_Next(self->Next);
+        CHSM_State_Next(scheduler);
 }
 
-void CHSM_State_Transfer(CHSM_State *self, CHSM_State *next) {
-        self->IsActive = false;
-        self->Next = next;
+void CHSM_State_Transfer(CHSM_Scheduler *scheduler, CHSM_State *state) {
+        scheduler->Next = state;
 }

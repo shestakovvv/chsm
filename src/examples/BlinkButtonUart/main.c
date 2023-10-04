@@ -18,6 +18,7 @@ void State_Active_OnExit(void);
 void State_Active2_MainLoop(void);
 void State_Active2_OnExit(void);
 
+CHSM_Scheduler Scheduler;
 
 CHSM_State State_Init = {
         .TickRate = 100,
@@ -50,7 +51,8 @@ int main() {
 
         memset(UartTxBuffer, 0, UART_TX_BUFFER_SIZE);
 
-        CHSM_State_Run(&State_Init);
+        CHSM_State_Transfer(&Scheduler,&State_Init);
+        CHSM_State_Run(&Scheduler);
 }
 
 #define MSG_SIZE 10
@@ -59,10 +61,10 @@ char msg[] = "Hello mir\n";
 void State_Init_MainLoop(void) {
         uint8_t res = HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin);
         if (res) {
-                if (State_Init.IsActive)
-                        CHSM_State_Transfer(&State_Init, &State_Active2);
+                if (Scheduler.Current == &State_Init)
+                        CHSM_State_Transfer(&Scheduler, &State_Active2);
                 else
-                        CHSM_State_Transfer(&State_Active2, &State_Init);
+                        CHSM_State_Transfer(&Scheduler, &State_Init);
         }
 
         memcpy(UartTxBuffer, msg, MSG_SIZE);
