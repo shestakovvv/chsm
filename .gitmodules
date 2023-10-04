@@ -1,0 +1,7 @@
+[submodule "lib/stm32cube_hal_utils"]
+	path = lib/stm32cube_hal_utils
+	url = ssh://git@10.1.0.31:/var/git/niva/air/production/utils/stm32cube_hal_utils.git
+	branch = main
+[submodule "lib/platform_Carlson1_stm32f3disco_stm32cube"]
+	path = lib/platform_Carlson1_stm32f3disco_stm32cube
+	url = ssh://git@10.1.0.31:/var/git/niva/air/production/platforms/platform_Carlson1_stm32f3disco_stm32cube.git
