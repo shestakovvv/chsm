@@ -51,8 +51,8 @@ int main() {
 
         memset(UartTxBuffer, 0, UART_TX_BUFFER_SIZE);
 
-        CHSM_State_Transfer(&Scheduler,&State_Init);
-        CHSM_State_Run(&Scheduler);
+        CHSM_Create(&Scheduler, &State_Init);
+        CHSM_Run(&Scheduler);
 }
 
 #define MSG_SIZE 10
@@ -62,9 +62,9 @@ void State_Init_MainLoop(void) {
         uint8_t res = HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin);
         if (res) {
                 if (Scheduler.Current == &State_Init)
-                        CHSM_State_Transfer(&Scheduler, &State_Active2);
+                        CHSM_State_Transition(&Scheduler, &State_Active2);
                 else
-                        CHSM_State_Transfer(&Scheduler, &State_Init);
+                        CHSM_State_Transition(&Scheduler, &State_Init);
         }
 
         memcpy(UartTxBuffer, msg, MSG_SIZE);
