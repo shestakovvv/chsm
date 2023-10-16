@@ -49,7 +49,10 @@ int main() {
         USART1_UART_Init(&huart1);
 
         CHSM_Create(&Scheduler, &State_Init);
-        CHSM_Run(&Scheduler);
+        CHSM_Status res = CHSM_Run(&Scheduler);
+        if (res != (CHSM_Status)STATUS_OK) {
+                Platform_ErrorIndicator(PLATFORM_INDICATOR_ON);
+        }
 }
 
 void State_Init_MainLoop(void) {

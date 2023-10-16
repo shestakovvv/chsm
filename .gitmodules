@@ -5,3 +5,7 @@
 [submodule "lib/platform_Carlson1_stm32f3disco_stm32cube"]
 	path = lib/platform_Carlson1_stm32f3disco_stm32cube
 	url = ssh://git@10.1.0.31:/var/git/niva/air/production/platforms/platform_Carlson1_stm32f3disco_stm32cube.git
+[submodule "lib/niva_result"]
+	path = lib/niva_result
+	url = ssh://git@10.1.0.31:/var/git/niva/air/production/utils/niva_result.git
+	branch = main
