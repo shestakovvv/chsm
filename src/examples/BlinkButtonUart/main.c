@@ -9,36 +9,35 @@
 
 #include "chsm.h"
 
-#define UART_TX_BUFFER_SIZE (100U)
-uint8_t UartTxBuffer[100];
-
 void State_Init_MainLoop(void);
+void State_Active_OnEntry(void);
 void State_Active_MainLoop(void);
 void State_Active_OnExit(void);
+void State_Active2_OnEntry(void);
 void State_Active2_MainLoop(void);
 void State_Active2_OnExit(void);
 
 CHSM_Scheduler Scheduler;
 
 CHSM_State State_Init = {
-        .TickRate = 100,
+        .TicksDelay = 100,
         .Entry = 0,
         .Exit = 0,
         .MainLoop = &State_Init_MainLoop
 };
 
 CHSM_State State_Active = {
-        .super = &State_Init,
-        .TickRate = 100,
-        .Entry = 0,
+        .Super = &State_Init,
+        .TicksDelay = 100,
+        .Entry = &State_Active_OnEntry,
         .Exit = &State_Active_OnExit,
         .MainLoop = &State_Active_MainLoop
 };
 
 CHSM_State State_Active2 = {
-        .super = &State_Active,
-        .TickRate = 100,
-        .Entry = 0,
+        .Super = &State_Active,
+        .TicksDelay = 1000,
+        .Entry = &State_Active2_OnEntry,
         .Exit = &State_Active2_OnExit,
         .MainLoop = &State_Active2_MainLoop
 };
@@ -49,14 +48,9 @@ int main() {
         GPIO_Init();
         USART1_UART_Init(&huart1);
 
-        memset(UartTxBuffer, 0, UART_TX_BUFFER_SIZE);
-
         CHSM_Create(&Scheduler, &State_Init);
         CHSM_Run(&Scheduler);
 }
-
-#define MSG_SIZE 10
-char msg[] = "Hello mir\n";
 
 void State_Init_MainLoop(void) {
         uint8_t res = HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin);
@@ -67,10 +61,6 @@ void State_Init_MainLoop(void) {
                         CHSM_State_Transition(&Scheduler, &State_Init);
         }
 
-        memcpy(UartTxBuffer, msg, MSG_SIZE);
-        Platform_TransmitMessage(UartTxBuffer, MSG_SIZE);
-        memset(UartTxBuffer, 0, UART_TX_BUFFER_SIZE);
-
         Platform_MainIndicator(PLATFORM_INDICATOR_TOGGLE);
 }
 
@@ -78,15 +68,32 @@ void State_Active_MainLoop(void) {
         Platform_TxIndicator(PLATFORM_INDICATOR_TOGGLE);
 }
 
+void State_Active_OnEntry(void) {
+        uint8_t msg[] = "Entry Active\n";
+        Platform_TransmitMessage(msg, strlen((char*)msg));
+}
+
 void State_Active_OnExit(void) {
+        uint8_t msg[] = "Exit Active\n";
+        Platform_TransmitMessage(msg, strlen((char*)msg));
         Platform_TxIndicator(PLATFORM_INDICATOR_OFF);
 }
 
+void State_Active2_OnEntry(void) {
+        uint8_t msg[] = "Entry Active2\n";
+        Platform_TransmitMessage(msg, strlen((char*)msg));
+        Platform_RxIndicator(PLATFORM_INDICATOR_TOGGLE);
+}
+
 void State_Active2_MainLoop(void) {
+        uint8_t msg[] = "Main Loop Active2\n";
+        Platform_TransmitMessage(msg, strlen((char*)msg));
         Platform_RxIndicator(PLATFORM_INDICATOR_TOGGLE);
 }
 
 void State_Active2_OnExit(void) {
+        uint8_t msg[] = "Exit Active2\n";
+        Platform_TransmitMessage(msg, strlen((char*)msg));
         Platform_RxIndicator(PLATFORM_INDICATOR_OFF);
 }
 

@@ -4,18 +4,7 @@
 
 #include "chsm.h"
 
-#define IF_SUPER if (self->super)
-
-#define RUN_LIFECYCLE_FUN(fun) \
-IF_SUPER { \
-CHSM_State_##fun(self->super); \
-} \
-if (self->fun) { \
-self->fun(); \
-}
-
-
-#define TICK_RATE_TO_TICKS(tickRate)       (1000 / tickRate)
+static uint8_t StackFunctionCounter = 0;        // кол-во вызовов рекурсивных функций
 
 void CHSM_State_Exit(CHSM_State *self);
 void CHSM_State_Entry(CHSM_State *self);
@@ -34,38 +23,68 @@ void CHSM_Run(CHSM_Scheduler* self) {
         }
 }
 
+void CHSM_State_Init(CHSM_State* self) {
+        self->_startTick = CHSM_GetTick();
+}
+
 void CHSM_State_Run(CHSM_Scheduler* scheduler) {
         if (!scheduler->Current)
-                CHSM_State_Next(scheduler);
+                return; // TODO: Error NO STATE
 
+        CHSM_State_Init(scheduler->Current);
+
+        StackFunctionCounter = 0;
         CHSM_State_Entry(scheduler->Current);
 
-        uint32_t tickStart = 0;
-        uint32_t tickStop = TICK_RATE_TO_TICKS(scheduler->Current->TickRate);
         while(scheduler->Next == 0) {
-                tickStart = CHSM_GetTick();
-
+                StackFunctionCounter = 0;
                 CHSM_State_MainLoop(scheduler->Current);
-
-                if (scheduler->Current->TickRate!=0)
-                        while (CHSM_GetTick() - tickStart < tickStop);
         }
 
+        StackFunctionCounter = 0;
         CHSM_State_Exit(scheduler->Current);
 
         CHSM_State_Next(scheduler);
 }
 
 void CHSM_State_Entry(CHSM_State *self) {
-        RUN_LIFECYCLE_FUN(Entry)
+        if (StackFunctionCounter >= CHSM_MAX_STACK_COUNT)
+                return; // StackOverflow;
+        if (self->Super) {
+                StackFunctionCounter++;
+                CHSM_State_Entry(self->Super);
+        } if (self->Entry) {
+                self->Entry();
+        }
 }
 
 void CHSM_State_Exit(CHSM_State *self) {
-        RUN_LIFECYCLE_FUN(Exit)
+        if (StackFunctionCounter >= CHSM_MAX_STACK_COUNT)
+                return; // StackOverflow;
+        if (self->Super) {
+                StackFunctionCounter++;
+                CHSM_State_Exit(self->Super);
+        } if (self->Exit) {
+                self->Exit();
+        }
 }
 
 void CHSM_State_MainLoop(CHSM_State *self) {
-        RUN_LIFECYCLE_FUN(MainLoop)
+        if (StackFunctionCounter >= CHSM_MAX_STACK_COUNT)
+                return; // StackOverflow;
+        if (self->Super) {
+                StackFunctionCounter++;
+                CHSM_State_MainLoop(self->Super);
+        } if (self->MainLoop) {
+                if (self->TicksDelay != 0) {
+                        if (CHSM_GetTick() - self->_startTick > self->TicksDelay) {
+                                self->MainLoop();
+                                self->_startTick = CHSM_GetTick();
+                        }
+                } else {
+                        self->MainLoop();
+                }
+        }
 }
 
 void CHSM_State_Transition(CHSM_Scheduler *scheduler, CHSM_State *state) {
