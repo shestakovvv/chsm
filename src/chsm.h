@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <niva_result.h>
+#include <rustacean_result.h>
 
 typedef struct CHSM_State CHSM_State;
 
@@ -23,10 +23,10 @@ typedef struct CHSM_Scheduler {
 #define CHSM_MAX_STACK_COUNT 10
 #endif
 
-typedef enum CHSM_Status {
-        CHSM_STATUS_ERROR_STACK_OVERFLOW = STATUS_MAX,
-        CHSM_STATUS_ERROR_EMPTY_STATE
-} CHSM_Status;
+typedef enum CHSM_Result_s {
+        CHSM_RESULT_ERROR_STACK_OVERFLOW = RESULT_ERROR_EXTEND,
+        CHSM_RESULT_ERROR_EMPTY_STATE
+} CHSM_Result;
 
 struct CHSM_State {
         CHSM_State* Super;
@@ -40,12 +40,12 @@ struct CHSM_State {
         void (*Exit)(void);
 };
 
-CHSM_Status CHSM_Create(CHSM_Scheduler *self, CHSM_State *initialState);
-CHSM_Status CHSM_Run(CHSM_Scheduler* self);
+CHSM_Result CHSM_Create(CHSM_Scheduler *self, CHSM_State *initialState);
+CHSM_Result CHSM_Run(CHSM_Scheduler* self);
 
 void CHSM_State_Init(CHSM_State* scheduler);
-CHSM_Status CHSM_State_Run(CHSM_Scheduler* scheduler);
-CHSM_Status CHSM_State_Transition(CHSM_Scheduler *scheduler, CHSM_State *state);
+CHSM_Result CHSM_State_Run(CHSM_Scheduler* scheduler);
+CHSM_Result CHSM_State_Transition(CHSM_Scheduler *scheduler, CHSM_State *state);
 
 uint32_t CHSM_GetTick(void);
 

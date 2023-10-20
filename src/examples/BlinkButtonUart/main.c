@@ -49,8 +49,8 @@ int main() {
         USART1_UART_Init(&huart1);
 
         CHSM_Create(&Scheduler, &State_Init);
-        CHSM_Status res = CHSM_Run(&Scheduler);
-        if (res != (CHSM_Status)STATUS_OK) {
+        CHSM_Result res = CHSM_Run(&Scheduler);
+        if (res != (CHSM_Result)RESULT_OK) {
                 Platform_ErrorIndicator(PLATFORM_INDICATOR_ON);
         }
 }
