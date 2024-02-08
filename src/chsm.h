@@ -8,8 +8,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <rustacean_result.h>
-
 typedef struct CHSM_State CHSM_State;
 
 typedef struct CHSM_Scheduler {
@@ -24,7 +22,10 @@ typedef struct CHSM_Scheduler {
 #endif
 
 typedef enum CHSM_Result_s {
-        CHSM_RESULT_ERROR_STACK_OVERFLOW = RESULT_ERROR_EXTEND,
+        CHSM_RESULT_OK = 0,
+        CHSM_RESULT_ERROR,
+        CHSM_RESULT_ERROR_ARGS,
+        CHSM_RESULT_ERROR_STACK_OVERFLOW,
         CHSM_RESULT_ERROR_EMPTY_STATE
 } CHSM_Result;
 

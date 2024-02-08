@@ -1,7 +1,3 @@
-#include "platform.h"
-#include "gpio.h"
-#include "usart1.h"
-
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -50,7 +46,7 @@ int main() {
 
         CHSM_Create(&Scheduler, &State_Init);
         CHSM_Result res = CHSM_Run(&Scheduler);
-        if (res != (CHSM_Result)RESULT_OK) {
+        if (res != CHSM_RESULT_OK) {
                 Platform_ErrorIndicator(PLATFORM_INDICATOR_ON);
         }
 }

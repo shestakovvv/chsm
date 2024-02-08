@@ -20,17 +20,17 @@ CHSM_Result CHSM_Create(CHSM_Scheduler *self, CHSM_State *initialState) {
         self->Next = 0;
         self->Current = initialState;
 
-        return (CHSM_Result)RESULT_OK;
+        return CHSM_RESULT_OK;
 }
 
 CHSM_Result CHSM_Run(CHSM_Scheduler* self) {
         while (self->IsActive) {
                 CHSM_Result result = CHSM_State_Run(self);
-                if (result != (CHSM_Result)RESULT_OK) {
+                if (result != CHSM_RESULT_OK) {
                         return result;
                 }
         }
-        return (CHSM_Result)RESULT_OK;
+        return CHSM_RESULT_OK;
 }
 
 void CHSM_State_Init(CHSM_State* self) {
@@ -45,19 +45,19 @@ CHSM_Result CHSM_State_Run(CHSM_Scheduler* scheduler) {
 
         CHSM_Result res;
         StackFunctionCounter = 0;
-        if ((res = CHSM_State_Entry(scheduler->Current)) != (CHSM_Result)RESULT_OK) {
+        if ((res = CHSM_State_Entry(scheduler->Current)) != CHSM_RESULT_OK) {
                 return res;
         }
 
         while(scheduler->Next == 0) {
                 StackFunctionCounter = 0;
-                if ((res = CHSM_State_MainLoop(scheduler->Current)) != (CHSM_Result)RESULT_OK) {
+                if ((res = CHSM_State_MainLoop(scheduler->Current)) != CHSM_RESULT_OK) {
                         return res;
                 }
         }
 
         StackFunctionCounter = 0;
-        if ((res = CHSM_State_Exit(scheduler->Current)) != (CHSM_Result)RESULT_OK) {
+        if ((res = CHSM_State_Exit(scheduler->Current)) != CHSM_RESULT_OK) {
                 return res;
         }
 
@@ -79,7 +79,7 @@ CHSM_Result CHSM_State_Entry(CHSM_State *self) {
         if (StackFunctionCounter >= CHSM_MAX_STACK_COUNT)
                 return CHSM_RESULT_ERROR_STACK_OVERFLOW;
 
-        return (CHSM_Result)RESULT_OK;
+        return CHSM_RESULT_OK;
 }
 
 CHSM_Result CHSM_State_Exit(CHSM_State *self) {
@@ -96,7 +96,7 @@ CHSM_Result CHSM_State_Exit(CHSM_State *self) {
         if (StackFunctionCounter >= CHSM_MAX_STACK_COUNT)
                 return CHSM_RESULT_ERROR_STACK_OVERFLOW;
 
-        return (CHSM_Result)RESULT_OK;
+        return CHSM_RESULT_OK;
 }
 
 CHSM_Result CHSM_State_MainLoop(CHSM_State *self) {
@@ -120,7 +120,7 @@ CHSM_Result CHSM_State_MainLoop(CHSM_State *self) {
         if (StackFunctionCounter >= CHSM_MAX_STACK_COUNT)
                 return CHSM_RESULT_ERROR_STACK_OVERFLOW;
 
-        return (CHSM_Result)RESULT_OK;
+        return CHSM_RESULT_OK;
 }
 
 CHSM_Result CHSM_State_Transition(CHSM_Scheduler *scheduler, CHSM_State *state) {
@@ -128,7 +128,7 @@ CHSM_Result CHSM_State_Transition(CHSM_Scheduler *scheduler, CHSM_State *state) 
                 return CHSM_RESULT_ERROR_EMPTY_STATE;
         scheduler->Next = state;
 
-        return (CHSM_Result)RESULT_OK;
+        return CHSM_RESULT_OK;
 }
 
 CHSM_Result CHSM_State_Next(CHSM_Scheduler* scheduler) {
@@ -138,5 +138,5 @@ CHSM_Result CHSM_State_Next(CHSM_Scheduler* scheduler) {
         scheduler->Current = scheduler->Next;
         scheduler->Next = 0;
 
-        return (CHSM_Result)RESULT_OK;
+        return CHSM_RESULT_OK;
 }
